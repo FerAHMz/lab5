@@ -21,6 +21,14 @@ document.addEventListener('DOMContentLoaded', function () {
     body.appendChild(inputArea);
 
     inputArea.focus();
+
+    inputArea.addEventListener('keypress', function (event) {
+        if (event.key === 'Enter' && this.value.trim() !== '') {
+            event.preventDefault();
+            sendMessage(this.value.trim());
+            this.value = '';
+        }
+    });
 });
 
 async function fetchMessages() {
