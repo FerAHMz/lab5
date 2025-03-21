@@ -10,9 +10,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const usernameInput = document.createElement('input');
     usernameInput.type = 'text';
     usernameInput.style.position = 'fixed';
-    usernameInput.style.top = '10px';
+    usernameInput.style.bottom = '50px';
     usernameInput.style.width = 'calc(100% - 20px)';
     usernameInput.style.left = '10px';
+    inputArea.maxLength = 50;
     usernameInput.id = 'usernameInput';
     usernameInput.placeholder = 'Ingresa tu nombre de usuario';
 
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
     inputArea.addEventListener('keypress', function (event) {
         if (event.key === 'Enter' && this.value.trim() !== '' && usernameInput.value.trim() !== '') {
             event.preventDefault();
-            sendMessage(this.value.trim());
+            sendMessage(usernameInput.value.trim(), this.value.trim());
             this.value = '';
         }
     });
