@@ -7,6 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
     messageContainer.style.marginBottom = '50px';
     messageContainer.id = 'messageContainer';
 
+    const usernameInput = document.createElement('input');
+    usernameInput.type = 'text';
+    usernameInput.style.position = 'fixed';
+    usernameInput.style.top = '10px';
+    usernameInput.style.width = 'calc(100% - 20px)';
+    usernameInput.style.left = '10px';
+    usernameInput.id = 'usernameInput';
+    usernameInput.placeholder = 'Ingresa tu nombre de usuario';
+
     const inputArea = document.createElement('input');
     inputArea.type = 'text';
     inputArea.style.position = 'fixed';
@@ -18,17 +27,22 @@ document.addEventListener('DOMContentLoaded', function () {
     inputArea.id = 'inputArea';
 
     body.appendChild(messageContainer);
+    body.appendChild(usernameInput);
     body.appendChild(inputArea);
 
     inputArea.focus();
 
     inputArea.addEventListener('keypress', function (event) {
-        if (event.key === 'Enter' && this.value.trim() !== '') {
+        if (event.key === 'Enter' && this.value.trim() !== '' && usernameInput.value.trim() !== '') {
             event.preventDefault();
             sendMessage(this.value.trim());
             this.value = '';
         }
     });
+
+    setInterval(fetchMessages, 5000);
+
+    fetchMessages();
 });
 
 async function fetchMessages() {
@@ -41,14 +55,14 @@ async function fetchMessages() {
     }
 }
 
-async function sendMessage(message) {
+async function sendMessage(username, message) {
     try {
        await fetch('https://chat.nrywhite.lat/chats', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message }),
+            body: JSON.stringify({ username, message }),
         });
         fetchMessages();
     } catch (error) {
@@ -62,18 +76,8 @@ function displayMessages(messages) {
 
     messages.forEach(msg => {
         const messageElement = document.createElement('div');
-        messageElement.textContent = msg.message;
+        messageElement.textContent = msg.username + ': ' + msg.message;
         container.appendChild(messageElement);
     });
     container.scrollTop = container.scrollHeight;
 }
-
-document.getElementById('inputArea').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter' && this.value.trim() !== '') {
-        event.preventDefault();
-        sendMessage(this.value.trim());
-        this.value = '';
-    }
-});
-
-setInterval(fetchMessages, 5000);
