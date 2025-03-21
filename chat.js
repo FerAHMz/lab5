@@ -21,11 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
     body.appendChild(inputArea);
 
     inputArea.focus();
-})
+});
 
 async function fetchMessages() {
     try {
-        const response = await fetch('https://chat.nrywhite.lat/chats')
+        const response = await fetch('https://chat.nrywhite.lat/chats');
         const messages = await response.json();
         displayMessages(messages);
     } catch (error) {
@@ -59,3 +59,13 @@ function displayMessages(messages) {
     });
     container.scrollTop = container.scrollHeight;
 }
+
+document.getElementById('inputArea').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter' && this.value.trim() !== '') {
+        event.preventDefault();
+        sendMessage(this.value.trim());
+        this.value = '';
+    }
+});
+
+setInterval(fetchMessages, 5000);
