@@ -21,12 +21,26 @@ document.addEventListener('DOMContentLoaded', function () {
     inputArea.type = 'text';
     inputArea.style.position = 'fixed';
     inputArea.style.bottom = '10px';
-    inputArea.style.width = 'calc(100% - 20px)';
+    inputArea.style.width = 'calc(100% - 80px)';
     inputArea.style.left = '10px';
     inputArea.maxLength = 140;
     inputArea.placeholder = 'Escribe un mensaje...';
     inputArea.id = 'inputArea';
 
+    const sendButton = document.createElement('button');
+    sendButton.textContent = 'Enviar';
+    sendButton.style.position = 'fixed';
+    sendButton.style.bottom = '10px';
+    sendButton.style.right = '10px';
+    sendButton.style.backgroundColor = '#4CAF50';
+    sendButton.onclick = function() {
+        if (inputArea.value.trim() !== '' && usernameInput.value.trim() !== '') {
+            sendMessage(usernameInput.value.trim(), inputArea.value.trim());
+            inputArea.value = '';
+        }
+    };
+
+    body.appendChild(sendButton);
     body.appendChild(messageContainer);
     body.appendChild(usernameInput);
     body.appendChild(inputArea);
