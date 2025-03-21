@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     usernameInput.style.bottom = '50px';
     usernameInput.style.width = 'calc(100% - 20px)';
     usernameInput.style.left = '10px';
-    inputArea.maxLength = 50;
+    usernameInput.maxLength = 50;
     usernameInput.id = 'usernameInput';
     usernameInput.placeholder = 'Ingresa tu nombre de usuario';
 
@@ -77,8 +77,43 @@ function displayMessages(messages) {
 
     messages.forEach(msg => {
         const messageElement = document.createElement('div');
-        messageElement.textContent = msg.username + ': ' + msg.message;
+        const messageText = document.createElement('span');
+        messageText.textContent = msg.username + ': ';
+
+        const messageContent = processMessage(msg.message);
+
+        messageElement.appendChild(messageText);
+        messageElement.appendChild(messageContent);
         container.appendChild(messageElement);
     });
     container.scrollTop = container.scrollHeight;
+}
+
+function processMessage(text) {
+    const urlRegex = /(https?:\/\/\S+)/ig;
+    const fragment = document.createDocumentFragment();
+
+    text.split(' ').forEach(part => {
+        if (urlRegex.test(part)) {
+            if (/\.(jpeg|jpg|png|gif)$/.test(part.toLowerCase())) {
+                const image = new Image();
+                image.src = part;
+                image.style.maxWidth = '200px';  
+                image.style.maxHeight = '200px';
+                fragment.appendChild(image);
+            } else {
+                const link = document.createElement('a');
+                link.href = part;
+                link.textContent = 'Ver enlace';
+                link.target = '_blank';
+                link.style.color = 'blue';
+                link.style.textDecoration = 'underline';
+                fragment.appendChild(link);
+            }
+        } else {
+            const textNode = document.createTextNode(part + ' ');
+            fragment.appendChild(textNode);
+        }
+    });
+    return fragment;
 }
