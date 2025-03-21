@@ -22,3 +22,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
     inputArea.focus();
 })
+
+async function fetchMessages() {
+    try {
+        const response = await fetch('https://chat.nrywhite.lat/chats')
+        const messages = await response.json();
+        displayMessages(messages);
+    } catch (error) {
+        console.error('Error al obtener los mensajes:', error);
+    }
+}
+
+async function sendMessage(message) {
+    try {
+       await fetch('https://chat.nrywhite.lat/chats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message }),
+        });
+        fetchMessages();
+    } catch (error) {
+        console.error('Error al enviar el mensaje:', error);
+    } 
+}
+
+function displayMessages(messages) {
+    const container = document.getElementById('messageContainer');
+    container.innerHTML = '';
+
+    messages.forEach(msg => {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = msg.message;
+        container.appendChild(messageElement);
+    });
+    container.scrollTop = container.scrollHeight;
+}
