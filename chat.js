@@ -39,11 +39,54 @@ document.addEventListener('DOMContentLoaded', function () {
             inputArea.value = '';
         }
     };
+    
+    const themeToggle = document.createElement('button');
+    themeToggle.textContent = localStorage.getItem('theme') === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+    themeToggle.textContent = 'Cambiar tema';
+    themeToggle.style.position = 'fixed';
+    themeToggle.style.top = '10px';
+    themeToggle.style.right = '40px';
+    themeToggle.style.backgroundColor = '#4CAF50';
+    themeToggle.style.color = 'white';
+    themeToggle.style.padding = '10px';
+    themeToggle.style.border = 'none';
+    themeToggle.style.borderRadius = '5px';
+    themeToggle.style.cursor = 'pointer';
 
-    body.appendChild(sendButton);
+    themeToggle.onclick = function() {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            setLightTheme(); 
+        } else {
+            setDarkTheme();
+        }
+    };
+
+    function setDarkTheme() {
+        document.body.style.backgroundColor = '#333';
+        document.body.style.color = '#fff';
+        localStorage.setItem('theme', 'dark');
+        themeToggle.textContent = 'Cambiar a tema claro';
+    }
+
+    function setLightTheme() {
+        document.body.style.backgroundColor = '#fff';
+        document.body.style.color = '#000';
+        localStorage.setItem('theme', 'light'); 
+        themeToggle.textContent = 'Cambiar a tema oscuro';
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+        setDarkTheme(); 
+    } else {
+        setLightTheme();
+    }
+
     body.appendChild(messageContainer);
     body.appendChild(usernameInput);
     body.appendChild(inputArea);
+    body.appendChild(sendButton);
+    body.appendChild(themeToggle);
 
     inputArea.focus();
 
