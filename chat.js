@@ -64,6 +64,58 @@ document.addEventListener('DOMContentLoaded', function () {
     inputArea.placeholder = 'Escribe un mensaje...';
     inputArea.id = 'inputArea';
 
+    const scrollButton = document.createElement('button');
+    scrollButton.innerHTML = '↓';
+    scrollButton.style.position = 'fixed';
+    scrollButton.style.bottom = '120px';
+    scrollButton.style.right = '50%';
+    scrollButton.style.transform = 'translateX(380px)';
+    scrollButton.style.width = '40px';
+    scrollButton.style.height = '40px';
+    scrollButton.style.backgroundColor = '#00C853';
+    scrollButton.style.color = 'white';
+    scrollButton.style.border = 'none';
+    scrollButton.style.borderRadius = '50%';
+    scrollButton.style.cursor = 'pointer';
+    scrollButton.style.fontSize = '20px';
+    scrollButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+    scrollButton.style.transition = 'all 0.3s ease';
+    scrollButton.style.display = 'none';
+    scrollButton.style.alignItems = 'center';
+    scrollButton.style.justifyContent = 'center';
+    scrollButton.style.lineHeight = '1';
+    scrollButton.style.zIndex = '1000';
+
+    scrollButton.addEventListener('click', () => {
+        const container = document.getElementById('messageContainer');
+        container.scrollTop = container.scrollHeight;
+    });
+
+    scrollButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#00a045';
+    });
+
+    scrollButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#00C853';
+    });
+
+    messageContainer.addEventListener('scroll', function() {
+        const isAtBottom = this.scrollTop + this.clientHeight >= this.scrollHeight - 50;
+        const hasScrolled = this.scrollTop < this.scrollHeight - this.clientHeight;
+        const shouldShow = !isAtBottom && hasScrolled && this.scrollHeight > this.clientHeight;
+        scrollButton.style.display = shouldShow ? 'flex' : 'none';
+    });
+    
+    const mediaQuery = window.matchMedia('(max-width: 850px)');
+    function handleScreenSize(e) {
+        if (e.matches) {
+            scrollButton.style.right = '20px';
+            scrollButton.style.transform = 'none';
+        } else {
+            scrollButton.style.right = '50%';
+            scrollButton.style.transform = 'translateX(380px)';
+        }
+    }
 
     const messageInputContainer = document.createElement('div');
     messageInputContainer.style.display = 'flex';
@@ -111,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function () {
     themeToggle.style.border = 'none';
     themeToggle.style.borderRadius = '5px';
     themeToggle.style.cursor = 'pointer';
-
     themeToggle.onclick = function() {
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark') {
@@ -165,10 +216,14 @@ document.addEventListener('DOMContentLoaded', function () {
     messageInputContainer.appendChild(sendButton);
     inputContainer.appendChild(usernameInput);
     inputContainer.appendChild(messageInputContainer);
-
+    
     body.appendChild(messageContainer);
     body.appendChild(inputContainer);
     body.appendChild(themeToggle);
+    body.appendChild(scrollButton);
+
+    mediaQuery.addListener(handleScreenSize);
+    handleScreenSize(mediaQuery)
 
     inputArea.focus();
 
@@ -213,9 +268,13 @@ async function sendMessage(username, message) {
 function displayMessages(messages) {
     const container = document.getElementById('messageContainer');
     const isDarkMode = localStorage.getItem('theme') === 'dark';
+    
+    const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
+    const previousScrollTop = container.scrollTop;
+
     container.innerHTML = '';
 
-    messages.forEach(msg => {
+    messages.forEach(({ username, message }) => {
         const messageElement = document.createElement('div');
         messageElement.style.margin = '8px 0';
         messageElement.style.padding = '12px';
@@ -227,20 +286,25 @@ function displayMessages(messages) {
         messageElement.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
 
         const messageText = document.createElement('span');
-        messageText.textContent = msg.username + ': ';
+        messageText.textContent = `${username}: `;
         messageText.style.fontWeight = 'bold';
         messageText.style.color = isDarkMode ? '#fff' : '#333';
 
-        const messageContent = processMessage(msg.message, isDarkMode);
+        const messageContent = processMessage(message, isDarkMode);
 
         messageElement.appendChild(messageText);
         messageElement.appendChild(messageContent);
         container.appendChild(messageElement);
     });
-    container.scrollTop = container.scrollHeight;
+
+    if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+    } else {
+        container.scrollTop = previousScrollTop;
+    }
 }
 
-function processMessage(text) {
+function processMessage(text, isDarkMode) {
     const urlRegex = /(https?:\/\/\S+)/ig;
     const fragment = document.createDocumentFragment();
 
@@ -256,14 +320,64 @@ function processMessage(text) {
                 image.style.margin = '5px 0';
                 fragment.appendChild(image);
             } else {
-                const link = document.createElement('a');
-                link.href = part;
-                link.textContent = 'Ver enlace';
-                link.target = '_blank';
-                link.style.color = '#2196F3';
-                link.style.textDecoration = 'none';
-                link.style.fontWeight = '500';
-                fragment.appendChild(link);
+                const previewContainer = document.createElement('div');
+                previewContainer.style.border = '1px solid #ddd';
+                previewContainer.style.borderRadius = '8px';
+                previewContainer.style.padding = '15px';
+                previewContainer.style.margin = '8px 0';
+                previewContainer.style.backgroundColor = isDarkMode ? '#2c2c2c' : '#f5f5f5';
+                previewContainer.style.transition = 'all 0.3s ease';
+
+                try {
+                    const url = new URL(part);
+                    const domain = url.hostname;
+                    const path = url.pathname;
+
+                    const domainText = document.createElement('div');
+                    domainText.textContent = domain;
+                    domainText.style.fontWeight = 'bold';
+                    domainText.style.color = isDarkMode ? '#fff' : '#000';
+                    domainText.style.marginBottom = '5px';
+
+                    const pathText = document.createElement('div');
+                    pathText.textContent = path;
+                    pathText.style.color = isDarkMode ? '#ccc' : '#666';
+                    pathText.style.fontSize = '14px';
+                    pathText.style.marginBottom = '10px';
+
+                    const link = document.createElement('a');
+                    link.href = part;
+                    link.textContent = 'Visitar sitio web →';
+                    link.target = '_blank';
+                    link.style.color = '#2196F3';
+                    link.style.textDecoration = 'none';
+                    link.style.fontWeight = '500';
+                    link.style.display = 'inline-block';
+
+                    previewContainer.appendChild(domainText);
+                    previewContainer.appendChild(pathText);
+                    previewContainer.appendChild(link);
+
+                    previewContainer.addEventListener('mouseenter', () => {
+                        previewContainer.style.transform = 'translateY(-2px)';
+                        previewContainer.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                    });
+
+                    previewContainer.addEventListener('mouseleave', () => {
+                        previewContainer.style.transform = 'translateY(0)';
+                        previewContainer.style.boxShadow = 'none';
+                    });
+
+                } catch (error) {
+                    const link = document.createElement('a');
+                    link.href = part;
+                    link.textContent = 'Ver enlace';
+                    link.target = '_blank';
+                    link.style.color = '#2196F3';
+                    previewContainer.appendChild(link);
+                }
+
+                fragment.appendChild(previewContainer);
             }
         } else {
             const textNode = document.createTextNode(part + ' ');
